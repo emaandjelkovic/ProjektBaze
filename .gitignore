@@ -20,3 +20,4 @@ appsettings.Development.json
 # Logs
 # ===============================
 *.log
+/appsettings.json

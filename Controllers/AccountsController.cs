@@ -51,7 +51,7 @@ namespace AccountManager.Controllers
             if (row == null)
                 return RedirectToAction(nameof(Create));
 
-            
+
             var model = new AccountManager.Models.Account
             {
                 Id = row.AccountId,
@@ -60,7 +60,7 @@ namespace AccountManager.Controllers
                 LastName = row.LastName,
                 DateOfBirth = row.DateOfBirth,
                 Address = row.Address,
-                User = null! 
+                User = null!
             };
 
             return View(model);
@@ -208,9 +208,10 @@ namespace AccountManager.Controllers
         private async Task<bool> UserHasAccountAsync(int userId)
         {
             return await context.Database
-                .SqlQueryRaw<bool>("SELECT user_has_account({0});", userId)
+                .SqlQueryRaw<bool>("SELECT user_has_account({0}) AS \"Value\"", userId)
                 .SingleAsync();
         }
+
 
 
     }
