@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using NpgsqlTypes;
+using System.Data;
 using System.Security.Claims;
 
 namespace AccountManager.Controllers
@@ -49,7 +51,7 @@ namespace AccountManager.Controllers
             if (row == null)
                 return RedirectToAction(nameof(Create));
 
-            // mapiramo na isti model koji tvoj View očekuje (Account)
+            
             var model = new AccountManager.Models.Account
             {
                 Id = row.AccountId,
@@ -58,7 +60,7 @@ namespace AccountManager.Controllers
                 LastName = row.LastName,
                 DateOfBirth = row.DateOfBirth,
                 Address = row.Address,
-                User = null! // ne koristi se u viewu (i imamo ValidateNever)
+                User = null! 
             };
 
             return View(model);
@@ -69,43 +71,18 @@ namespace AccountManager.Controllers
         {
             var model = new Account
             {
-                DateOfBirth = DateTime.Now,
+                DateOfBirth = DateTime.Today,
                 UserId = GetCurrentUserId()
             };
 
             return View(model);
         }
 
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create(Account model)
-        //{
-        //    var userId = GetCurrentUserId();
-
-        //    // sigurnost: userId dolazi iz cookie-a, ne iz forme
-        //    model.UserId = userId;
-
-        //    // ako već postoji account, ne dopuštamo novi
-        //    var exists = await context.Accounts.AnyAsync(a => a.UserId == userId);
-        //    if (exists)
-        //        return RedirectToAction(nameof(My));
-
-        //    if (!ModelState.IsValid)
-        //        return View(model);
-
-        //    context.Accounts.Add(model);
-        //    await context.SaveChangesAsync();
-
-        //    await RefreshClaimsAsync(userId);
-
-        //    return RedirectToAction(nameof(My));
-        //}
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Account model)
         {
-            // navigaciju ne validiramo
+            // navigaciju ne validiramo (da ne traži User)
             ModelState.Remove(nameof(Account.User));
 
             var userId = GetCurrentUserId();
@@ -113,37 +90,33 @@ namespace AccountManager.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            // userId uvijek uzimamo iz cookie-a
-            var pUserId = userId;
-            var pFirst = model.FirstName;
-            var pLast = model.LastName;
-            var pDob = model.DateOfBirth.Date; // date-only
-            var pAddr = model.Address;
+            model.UserId = userId;
 
-            // OUT param
-            var outId = new NpgsqlParameter("new_account_id", NpgsqlTypes.NpgsqlDbType.Integer)
+            model.DateOfBirth = model.DateOfBirth.Date;
+
+            // provjera: jedan account po useru
+            var alreadyHas = await context.Accounts.AsNoTracking().AnyAsync(a => a.UserId == userId);
+            if (alreadyHas)
             {
-                Direction = System.Data.ParameterDirection.Output
-            };
+                ModelState.AddModelError(string.Empty, "Već imaš kreiran račun.");
+                return View(model);
+            }
 
             try
             {
-                await context.Database.ExecuteSqlRawAsync(
-                    @"CALL sp_create_account({0}, {1}, {2}, {3}, {4}, {5});",
-                    pUserId, pFirst, pLast, pDob, pAddr, outId
-                );
+                context.Accounts.Add(model);
+                await context.SaveChangesAsync();
             }
-            catch (PostgresException ex) when (ex.SqlState == "P0001")
+            catch (DbUpdateException ex) when (ex.InnerException is PostgresException pg && pg.SqlState == "23505")
             {
-                // naša custom greška: account već postoji
-                ModelState.AddModelError(string.Empty, "Račun već postoji za ovog korisnika.");
+                ModelState.AddModelError(string.Empty, "Već imaš kreiran račun.");
                 return View(model);
             }
 
             await RefreshClaimsAsync(userId);
-
             return RedirectToAction(nameof(My));
         }
+
 
         [HttpGet]
         public async Task<IActionResult> Edit()

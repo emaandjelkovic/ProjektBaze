@@ -1,20 +1,10 @@
-﻿-- 1) CREATE DATABASE
-DO
-$$
-BEGIN
-    IF NOT EXISTS (
-        SELECT FROM pg_database WHERE datname = 'AccountManager'
-    ) THEN
-        CREATE DATABASE "AccountManager";
-    END IF;
-END
-$$;
+﻿--1) kreiranje baze AccountManager
+CREATE DATABASE "AccountManager";
 
--- 2) SPAJANJE NA BAZU
-\connect "AccountManager";
+--2) u pgAdmin4 ili nekom drugom management studiu otvoriti query za bazu "AccountManager" i pokrenuti skriptu pod korakom 3.
 
 
--- 3) CREATE TABLES, PROCEDURES, VIEWS, TRIGGERS, ETC.
+-- 3) kreiranje tablica, view-ova, triggera,procedura
 CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
     "MigrationId" character varying(150) NOT NULL,
     "ProductVersion" character varying(32) NOT NULL,
@@ -141,25 +131,29 @@ JOIN roles r ON r."Id" = u."RoleId";
 
 
 
-CREATE OR REPLACE PROCEDURE sp_create_account(
+CREATE OR REPLACE PROCEDURE public.sp_admin_set_role(
     IN p_user_id integer,
-    IN p_first_name text,
-    IN p_last_name text,
-    IN p_date_of_birth date,
-    IN p_address text,
-    OUT new_account_id integer
+    IN p_role_id integer
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF user_has_account(p_user_id) THEN
-        RAISE EXCEPTION 'Account already exists for userId=%', p_user_id
-            USING ERRCODE = 'P0001';
+    -- provjera postoji li user
+    IF NOT EXISTS (SELECT 1 FROM users WHERE "Id" = p_user_id) THEN
+        RAISE EXCEPTION 'User not found id=%', p_user_id
+            USING ERRCODE = 'P0002';
     END IF;
 
-    INSERT INTO accounts ("UserId", "FirstName", "LastName", "DateOfBirth", "Address")
-    VALUES (p_user_id, p_first_name, p_last_name, p_date_of_birth, p_address)
-    RETURNING "Id" INTO new_account_id;
+    -- provjera postoji li rola
+    IF NOT EXISTS (SELECT 1 FROM roles WHERE "Id" = p_role_id) THEN
+        RAISE EXCEPTION 'Role not found id=%', p_role_id
+            USING ERRCODE = 'P0003';
+    END IF;
+
+    -- promjena role
+    UPDATE users
+    SET "RoleId" = p_role_id
+    WHERE "Id" = p_user_id;
 END;
 $$;
 
@@ -172,7 +166,7 @@ SELECT setval(
     false);
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20260116081943_InitialAllInOne', '9.0.10');
+VALUES ('20260116110707_Initial', '9.0.10');
 
 COMMIT;
 

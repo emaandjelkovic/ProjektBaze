@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccountManager.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialAllInOne : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -103,8 +103,6 @@ namespace AccountManager.Migrations
                 name: "IX_users_RoleId",
                 table: "users",
                 column: "RoleId");
-
-
 
             // 1) Audit tablica: account_audit_logs
             migrationBuilder.CreateTable(
@@ -214,38 +212,41 @@ JOIN roles r ON r.""Id"" = u.""RoleId"";
 
 
 
-            // 6) Stored procedure: sp_create_account (koristi predikat)
+            // 6) Stored procedure: sp_admin_set_role (koristi predikat)
             migrationBuilder.Sql(@"
-CREATE OR REPLACE PROCEDURE sp_create_account(
+CREATE OR REPLACE PROCEDURE public.sp_admin_set_role(
     IN p_user_id integer,
-    IN p_first_name text,
-    IN p_last_name text,
-    IN p_date_of_birth date,
-    IN p_address text,
-    OUT new_account_id integer
+    IN p_role_id integer
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    IF user_has_account(p_user_id) THEN
-        RAISE EXCEPTION 'Account already exists for userId=%', p_user_id
-            USING ERRCODE = 'P0001';
+    -- provjera postoji li user
+    IF NOT EXISTS (SELECT 1 FROM users WHERE ""Id"" = p_user_id) THEN
+        RAISE EXCEPTION 'User not found id=%', p_user_id
+            USING ERRCODE = 'P0002';
     END IF;
 
-    INSERT INTO accounts (""UserId"", ""FirstName"", ""LastName"", ""DateOfBirth"", ""Address"")
-    VALUES (p_user_id, p_first_name, p_last_name, p_date_of_birth, p_address)
-    RETURNING ""Id"" INTO new_account_id;
+    -- provjera postoji li rola
+    IF NOT EXISTS (SELECT 1 FROM roles WHERE ""Id"" = p_role_id) THEN
+        RAISE EXCEPTION 'Role not found id=%', p_role_id
+            USING ERRCODE = 'P0003';
+    END IF;
+
+    -- promjena role
+    UPDATE users
+    SET ""RoleId"" = p_role_id
+    WHERE ""Id"" = p_user_id;
 END;
 $$;
 ");
-
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "accounts");
+name: "accounts");
 
             migrationBuilder.DropTable(
                 name: "users");
@@ -258,7 +259,9 @@ $$;
             migrationBuilder.Sql(@"DROP VIEW IF EXISTS vw_admin_accounts;");
             migrationBuilder.Sql(@"DROP TRIGGER IF EXISTS trg_account_audit ON accounts;");
             migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS fn_account_audit();");
-            migrationBuilder.Sql(@"DROP PROCEDURE IF EXISTS sp_create_account(integer, text, text, date, text);");
+            migrationBuilder.Sql(@"
+DROP PROCEDURE IF EXISTS public.sp_admin_set_role(integer, integer);
+");
             migrationBuilder.Sql(@"DROP FUNCTION IF EXISTS user_has_account(integer);");
         }
     }

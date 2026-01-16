@@ -3,6 +3,7 @@ using AccountManager.ViewModels.Admin;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace AccountManager.Controllers;
 
@@ -28,10 +29,16 @@ public class AdminController : Controller
                 Id = u.Id,
                 Email = u.Email,
                 RoleName = u.Role.Name,
+                RoleId = u.RoleId,
                 CreatedAt = u.CreatedAt,
                 HasAccount = u.Account != null
             })
             .ToListAsync();
+
+        ViewBag.Roles = await _db.Roles
+    .AsNoTracking()
+    .OrderBy(r => r.Id)
+    .ToListAsync();
 
         return View(users);
     }
@@ -86,4 +93,44 @@ public class AdminController : Controller
 
         return View(vm);
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ToggleRole(int userId)
+    {
+        // dohvat trenutne role iz baze (ne iz DTO)
+        var currentRoleId = await _db.Users
+            .Where(u => u.Id == userId)
+            .Select(u => u.RoleId)
+            .SingleOrDefaultAsync();
+
+        if (currentRoleId == 0)
+        {
+            TempData["Error"] = "Korisnik ne postoji.";
+            return RedirectToAction(nameof(Users)); // <= prilagodi ako ti je action drugačiji
+        }
+
+        // Pretpostavka: 1=User, 2=Admin
+        var newRoleId = (currentRoleId == 2) ? 1 : 2;
+
+        try
+        {
+            await _db.Database.ExecuteSqlRawAsync(
+                @"CALL public.sp_admin_set_role({0}, {1});",
+                userId, newRoleId
+            );
+            TempData["Success"] = "Rola promijenjena.";
+        }
+        catch (PostgresException ex) when (ex.SqlState == "P0002")
+        {
+            TempData["Error"] = "Korisnik ne postoji.";
+        }
+        catch (PostgresException ex) when (ex.SqlState == "P0003")
+        {
+            TempData["Error"] = "Rola ne postoji.";
+        }
+
+        return RedirectToAction(nameof(Users)); // <= prilagodi na tvoju users action
+    }
 }
+

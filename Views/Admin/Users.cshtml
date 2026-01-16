@@ -3,6 +3,10 @@
     ViewData["Title"] = "Korisnici";
 }
 
+@{
+    var roles = (List<AccountManager.Models.Role>)ViewBag.Roles;
+}
+
 <div class="home-hero" style="align-items:flex-start;">
     <div class="glass-table-wrap">
         <div class="home-card card-left" style="padding: 28px;">
@@ -17,9 +21,10 @@
                 <tr>
                     <th>ID</th>
                     <th>Email</th>
-                    <th>Role</th>
-                    <th>Created</th>
-                    <th>Account</th>
+                    <th>Rola</th>
+                    <th>Kreiran</th>
+                    <th>Postojeći račun</th>
+                    <th>Promijeni rolu</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,6 +44,18 @@
                             {
                                 <span class="badge">NE</span>
                             }
+                        </td>
+                        <td>
+                            <form asp-action="ToggleRole" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@u.Id" />
+
+                                <button type="submit"
+                                        class="role-chip @(u.RoleName == "Admin" ? "role-admin" : "role-user")"
+                                        title="Klikni za promjenu role">
+                                    @u.RoleName
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 }
