@@ -1,0 +1,48 @@
+﻿@model List<AccountManager.ViewModels.Admin.UserDto>
+@{
+    ViewData["Title"] = "Korisnici";
+}
+
+<div class="home-hero" style="align-items:flex-start;">
+    <div class="glass-table-wrap">
+        <div class="home-card card-left" style="padding: 28px;">
+            <h1>Korisnici</h1>
+            <p>Popis svih registriranih korisnika.</p>
+        </div>
+
+        <div style="height: 16px;"></div>
+
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                    <th>Account</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td>@u.Id</td>
+                        <td>@u.Email</td>
+                        <td><span class="badge">@u.RoleName</span></td>
+                        <td>@u.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>
+                            @if (u.HasAccount)
+                            {
+                                <span class="badge">DA</span>
+                            }
+                            else
+                            {
+                                <span class="badge">NE</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

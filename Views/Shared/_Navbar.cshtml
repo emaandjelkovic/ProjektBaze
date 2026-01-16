@@ -1,0 +1,44 @@
+﻿@{
+    var isAuth = User?.Identity?.IsAuthenticated == true;
+    var isAdmin = isAuth && User.IsInRole("Admin");
+    var isUser = isAuth && User.IsInRole("User");
+
+    var hasAccountClaim = User?.FindFirst("HasAccount")?.Value;
+    var hasAccount = hasAccountClaim == "1";
+}
+
+<header class="glass-navbar">
+    <div class="glass-navbar-inner">
+        <a class="glass-brand" asp-controller="Home" asp-action="Index">AccountManager</a>
+
+        <nav class="glass-nav">
+            <a asp-controller="Home" asp-action="Index">Home</a>
+
+            @if (isAdmin)
+            {
+                <a asp-controller="Admin" asp-action="Users">Users</a>
+                <a asp-controller="Admin" asp-action="Accounts">Accounts</a>
+            }
+
+            @if (isUser)
+            {
+                <a asp-controller="Accounts" asp-action="My">
+                    @(hasAccount ? "Moj račun" : "Kreiraj račun")
+                </a>
+            }
+
+            @if (isAuth)
+            {
+                <form asp-controller="Auth" asp-action="Logout" method="post" class="glass-logout-form">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="glass-btn">Odjava</button>
+                </form>
+            }
+            else
+            {
+                <a asp-controller="Auth" asp-action="Login">Prijava</a>
+                <a asp-controller="Auth" asp-action="Register" class="glass-cta">Registracija</a>
+            }
+        </nav>
+    </div>
+</header>

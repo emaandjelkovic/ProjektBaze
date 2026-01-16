@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AccountManager</title>
+
+    <!-- (opcionalno) Bootstrap može ostati, ali navbar više ne koristimo iz bootstrapa -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <!-- Naš globalni dizajn (gradient + glass navbar + home styles) -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Ako ti VS generira ovaj file, može ostati -->
+    <link rel="stylesheet" href="~/AccountManager.styles.css" asp-append-version="true" />
+</head>
+<body>
+
+    <!-- Shared navbar (mijenja se po roli) -->
+    <partial name="_Navbar" />
+
+    <!-- Content ispod fixed navbara -->
+    <div class="page">
+        @RenderBody()
+    </div>
+
+    <!-- (opcionalno) footer, možeš i maknuti ako želiš čistiji landing -->
+    <footer style="text-align:center; padding: 18px; color: rgba(255,255,255,0.75);">
+        &copy; 2026 - AccountManager
+    </footer>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/hr.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,50 @@
+﻿@model List<AccountManager.ViewModels.Admin.AccountDto>
+@{
+    ViewData["Title"] = "Računi";
+}
+
+<div class="home-hero" style="align-items:flex-start;">
+    <div class="glass-table-wrap">
+        <div class="home-card card-left" style="padding: 28px;">
+            <h1>Računi</h1>
+            <p>Popis svih korisnika koji imaju kreiran račun.</p>
+        </div>
+
+        <div style="height: 16px;"></div>
+
+        <table class="glass-table">
+            <thead>
+                <tr>
+                    <th>Account ID</th>
+                    <th>User</th>
+                    <th>Ime</th>
+                    <th>Prezime</th>
+                    <th>Datum rođenja</th>
+                    <th>Detalji</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var a in Model)
+                {
+                    <tr>
+                        <td>@a.Id</td>
+                        <td>
+                            <div>@a.UserEmail</div>
+                            <div style="opacity:.9; font-size:12px;">
+                                Role: <span class="badge">@a.UserRole</span>
+                            </div>
+                        </td>
+                        <td>@a.FirstName</td>
+                        <td>@a.LastName</td>
+                        <td>@a.DateOfBirth.ToString("dd.MM.yyyy")</td>
+                        <td>
+                            <a class="glass-cta" asp-action="AccountDetails" asp-route-id="@a.Id">
+                                Otvori
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

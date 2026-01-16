@@ -1,0 +1,31 @@
+﻿@model AccountManager.Models.Account
+@{
+    ViewData["Title"] = "Moj račun";
+}
+
+<div class="home-hero">
+    <div class="home-card card-left">
+        <h1>Moj račun</h1>
+        <p>Pregled tvojih podataka.</p>
+
+        <div style="margin-top: 28px; line-height: 1.9;">
+            <div><b>Ime:</b> @Model.FirstName</div>
+            <div><b>Prezime:</b> @Model.LastName</div>
+            <div><b>Datum rođenja:</b> @Model.DateOfBirth.ToString("dd.MM.yyyy")</div>
+            <div><b>Adresa:</b> @Model.Address</div>
+        </div>
+
+        <div style="margin-top: 26px; display:flex; gap: 12px; flex-wrap: wrap;">
+            <a class="glass-cta" asp-action="Edit">Uredi</a>
+
+            <form asp-action="Delete" method="post" style="margin:0;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="glass-btn">Obriši račun</button>
+            </form>
+        </div>
+
+        <div style="margin-top: 14px; opacity: 0.9; font-size: 14px;">
+            * Brisanje računa uklanja samo podatke računa. Korisnički profil i dalje može postojati (ovisno o tvojoj logici).
+        </div>
+    </div>
+</div>

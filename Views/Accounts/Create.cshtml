@@ -1,0 +1,59 @@
+﻿@model AccountManager.Models.Account
+@{
+    ViewData["Title"] = "Kreiraj račun";
+}
+
+<div class="home-hero">
+    <div class="home-card card-left">
+        <h1>Kreiraj račun</h1>
+        <p>Unesi osnovne podatke za svoj korisnički račun.</p>
+
+        <form asp-action="Create" method="post" style="margin-top: 28px;">
+            @Html.AntiForgeryToken()
+            <input asp-for="UserId" hidden />
+            <div class="form-group">
+                <label asp-for="FirstName">Ime</label>
+                <input asp-for="FirstName" placeholder="npr. Filip" />
+                <span asp-validation-for="FirstName"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LastName">Prezime</label>
+                <input asp-for="LastName" placeholder="npr. Horvat" />
+                <span asp-validation-for="LastName"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="DateOfBirth">Datum rođenja</label>
+                <input asp-for="DateOfBirth" type="text" class="js-date date-with-icon" placeholder="Odaberi datum..." />
+                <span asp-validation-for="DateOfBirth"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Address">Adresa</label>
+                <input asp-for="Address" placeholder="npr. Ulica 1, Zagreb" />
+                <span asp-validation-for="Address"></span>
+            </div>
+
+            <div asp-validation-summary="All"></div>
+
+            <button class="btn-primary" type="submit">Spremi</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        flatpickr(".js-date", {
+            locale: flatpickr.l10ns.hr, // hrvatski
+            dateFormat: "Y-m-d",        // server-friendly (MVC binder)
+            altInput: true,
+            altFormat: "d.m.Y",         // prikaz useru
+            allowInput: false,          // zabrani tipkanje
+            clickOpens: true,
+            maxDate: "today"            // rođendan ne može u budućnosti
+        });
+    </script>
+}

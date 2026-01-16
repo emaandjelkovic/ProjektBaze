@@ -1,0 +1,26 @@
+﻿@model AccountManager.ViewModels.Admin.AdminAccountDetailsVm
+@{
+    ViewData["Title"] = "Detalji računa";
+}
+
+<div class="home-hero">
+    <div class="home-card card-left">
+        <h1>Detalji računa</h1>
+        <p>Pregled podataka</p>
+
+        <div style="margin-top: 26px; line-height: 1.9;">
+            <div><b>Account ID:</b> @Model.Id</div>
+            <div><b>User:</b> @Model.UserEmail</div>
+            <div><b>User role:</b> <span class="badge">@Model.UserRole</span></div>
+            <div style="height:10px;"></div>
+            <div><b>Ime:</b> @Model.FirstName</div>
+            <div><b>Prezime:</b> @Model.LastName</div>
+            <div><b>Datum rođenja:</b> @Model.DateOfBirth.ToString("dd.MM.yyyy")</div>
+            <div><b>Adresa:</b> @Model.Address</div>
+        </div>
+
+        <div style="margin-top: 22px;">
+            <a class="glass-cta" asp-action="Accounts">Natrag</a>
+        </div>
+    </div>
+</div>
