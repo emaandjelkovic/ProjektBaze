@@ -367,3 +367,57 @@ body {
     color: rgba(230,230,255,.95);
     border: 1px solid rgba(120,110,255,.35);
 }
+
+.animated-bg {
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient( 90deg, #ffe066, #ffb703, #fb5607, #e63946 );
+    background-size: 400% 400%;
+    animation: gradientFlow 20s ease-in-out infinite;
+}
+
+    .animated-bg::before {
+        content: "";
+        position: absolute;
+        inset: -50%;
+        background: radial-gradient( circle at 30% 50%, rgba(255,255,255,0.25), transparent 60% );
+        animation: waveMove 12s linear infinite;
+    }
+
+    .animated-bg::after {
+        content: "";
+        position: absolute;
+        inset: -50%;
+        background: radial-gradient( circle at 70% 50%, rgba(255,255,255,0.15), transparent 60% );
+        animation: waveMove 18s linear infinite reverse;
+    }
+
+/* ANIMACIJE */
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes waveMove {
+    0% {
+        transform: translateX(-20%) translateY(0);
+    }
+
+    50% {
+        transform: translateX(20%) translateY(-10%);
+    }
+
+    100% {
+        transform: translateX(-20%) translateY(0);
+    }
+}

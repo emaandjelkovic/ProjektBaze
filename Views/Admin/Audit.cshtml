@@ -9,8 +9,8 @@
     <div class="glass-card-header">
         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
             <div>
-                <h2 class="glass-title mb-1">Promjene</h2>
-                <p class="glass-subtitle mb-0">Pregled promjena nad korisnicima i računima</p>
+                <h2 class="text-white glass-title mb-1">Promjene</h2>
+                <p class="text-white glass-subtitle mb-0">Pregled promjena nad korisnicima i računima</p>
             </div>
 
             <a class="btn btn-outline-light" asp-controller="Admin" asp-action="Audit">Osvježi</a>
@@ -24,7 +24,7 @@
                     <th style="width:190px;">Vrijeme</th>
                     <th style="width:120px;">Entitet</th>
                     <th style="width:120px;">Akcija</th>
-                    <th style="width:110px;">EntityId</th>
+                   @*  <th style="width:110px;">EntityId</th> *@
                     <th style="width:110px;">UserId</th>
                     <th style="width:120px;" class="text-end">Detalji</th>
                 </tr>
@@ -70,7 +70,7 @@
                                 <span class="badge rounded-pill @badgeClass">@actionText</span>
                             </td>
 
-                            <td>@(x.EntityId ?? "-")</td>
+                           @*  <td>@(x.EntityId ?? "-")</td> *@
                             <td>@(x.UserId ?? "-")</td>
 
                             <td class="text-end">
