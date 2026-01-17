@@ -9,17 +9,27 @@
 
 <header class="glass-navbar">
     <div class="glass-navbar-inner">
-        <a class="glass-brand" asp-controller="Home" asp-action="Index">AccountManager</a>
 
+        <!-- Brand -->
+        <a class="glass-brand" asp-controller="Home" asp-action="Index">
+            AccountManager
+        </a>
+
+        <!-- Navigation -->
         <nav class="glass-nav">
-            <a asp-controller="Home" asp-action="Index">Home</a>
 
+            <!-- Home uvijek vidljiv -->
+            @* <a asp-controller="Home" asp-action="Index">Home</a>
+ *@
+            <!-- ADMIN -->
             @if (isAdmin)
             {
-                <a asp-controller="Admin" asp-action="Users">Users</a>
-                <a asp-controller="Admin" asp-action="Accounts">Accounts</a>
+                <a asp-controller="Admin" asp-action="Users">Korisnici</a>
+                <a asp-controller="Admin" asp-action="Accounts">Računi</a>
+                <a asp-controller="Admin" asp-action="Audit">Promjene</a>
             }
 
+            <!-- USER -->
             @if (isUser)
             {
                 <a asp-controller="Accounts" asp-action="My">
@@ -27,18 +37,29 @@
                 </a>
             }
 
+            <!-- AUTH -->
             @if (isAuth)
             {
-                <form asp-controller="Auth" asp-action="Logout" method="post" class="glass-logout-form">
+                <form asp-controller="Auth"
+                      asp-action="Logout"
+                      method="post"
+                      class="glass-logout-form">
                     @Html.AntiForgeryToken()
-                    <button type="submit" class="glass-btn">Odjava</button>
+                    <button type="submit" class="glass-btn">
+                        Odjava
+                    </button>
                 </form>
             }
             else
             {
-                <a asp-controller="Auth" asp-action="Login">Prijava</a>
-                <a asp-controller="Auth" asp-action="Register" class="glass-cta">Registracija</a>
+                <a asp-controller="Auth" asp-action="Login">
+                    Prijava
+                </a>
+                <a asp-controller="Auth" asp-action="Register" class="glass-cta">
+                    Registracija
+                </a>
             }
+
         </nav>
     </div>
 </header>

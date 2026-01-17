@@ -1,8 +1,9 @@
 using AccountManager.Data;
 using AccountManager.Helpers;
 using AccountManager.Models;
-using Microsoft.EntityFrameworkCore;
+using AccountManager.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/Auth/Login";
         options.AccessDeniedPath = "/Auth/Denied";
     });
+
+builder.Services.AddScoped<IPermissionService, PermissionService>();
+builder.Services.AddScoped<ISessionService, SessionService>();
 
 builder.Services.AddAuthorization();
 

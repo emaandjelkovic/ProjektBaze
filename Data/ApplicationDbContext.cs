@@ -1,6 +1,7 @@
 ﻿using AccountManager.Models;
 using AccountManager.Models.Views;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Emit;
 
 namespace AccountManager.Data
 {
@@ -13,6 +14,12 @@ namespace AccountManager.Data
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<User> Users => Set<User>();
         public DbSet<Account> Accounts => Set<Account>();
+
+        public DbSet<Permission> Permissions => Set<Permission>();
+        public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+        public DbSet<UserSession> UserSessions => Set<UserSession>();
+        public DbSet<UserAuditLog> UserAuditLogs => Set<UserAuditLog>(); // ako ga koristiš
+
 
         public DbSet<VwAdminAccount> VwAdminAccounts => Set<VwAdminAccount>();
 
@@ -102,6 +109,24 @@ namespace AccountManager.Data
                 
             });
 
+            b.Entity<Permission>(entity =>
+            {
+                entity.ToTable("permissions");   // ⬅ lowercase
+
+                entity.HasKey(p => p.Id);
+
+                entity.Property(p => p.Code)
+                      .IsRequired()
+                      .HasMaxLength(50);
+
+                entity.Property(p => p.Name)
+                      .IsRequired()
+                      .HasMaxLength(200);
+
+                entity.HasIndex(p => p.Code)
+                      .IsUnique();
+            });
+
             b.Entity<Account>()
                         .Property(a => a.DateOfBirth)
                         .HasColumnType("date");
@@ -111,7 +136,79 @@ namespace AccountManager.Data
                 entity.HasNoKey();
                 entity.ToView("vw_admin_accounts");
             });
+
+            b.Entity<RolePermission>(e =>
+            {
+                e.ToTable("role_permissions");
+
+                e.HasKey(x => new { x.RoleId, x.PermissionId });
+
+                e.HasOne(x => x.Role)
+                    .WithMany(r => r.RolePermissions)
+                    .HasForeignKey(x => x.RoleId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(x => x.Permission)
+                    .WithMany(p => p.RolePermissions)
+                    .HasForeignKey(x => x.PermissionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            b.Entity<Permission>().HasData(
+    new Permission { Id = 1, Code = "USERS_VIEW", Name = "Pregled korisnika" },
+    new Permission { Id = 2, Code = "USERS_ROLE_CHANGE", Name = "Promjena role korisnika" },
+    new Permission { Id = 3, Code = "ACCOUNTS_VIEW", Name = "Pregled računa" },
+    new Permission { Id = 4, Code = "AUDIT_VIEW", Name = "Pregled audita" }
+);
+            b.Entity<RolePermission>().HasData(
+    new RolePermission { RoleId = 2, PermissionId = 1 },
+    new RolePermission { RoleId = 2, PermissionId = 2 },
+    new RolePermission { RoleId = 2, PermissionId = 3 },
+    new RolePermission { RoleId = 2, PermissionId = 4 }
+);
+
+            b.Entity<UserSession>(e =>
+            {
+                e.ToTable("user_sessions");
+                e.HasKey(x => x.Id);
+
+                e.Property(x => x.Id).HasColumnType("uuid");
+
+                e.Property(x => x.CreatedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("now()");
+
+                e.Property(x => x.LastSeenAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("now()");
+
+                e.Property(x => x.RevokedAt).HasColumnType("timestamp with time zone");
+
+                e.Property(x => x.IpAddress).HasMaxLength(50);
+                e.Property(x => x.UserAgent).HasMaxLength(300);
+
+                e.HasIndex(x => x.UserId);
+
+                e.HasOne(x => x.User)
+                    .WithMany()
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            b.Entity<UserAuditLog>(e =>
+            {
+                e.ToTable("user_audit_logs");
+                e.HasKey(x => x.Id);
+
+                e.Property(x => x.ChangedAt)
+                    .HasColumnType("timestamp with time zone")
+                    .HasDefaultValueSql("now()");
+
+                e.HasIndex(x => x.UserId);
+            });
+
         }
+
 
 
     }

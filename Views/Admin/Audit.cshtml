@@ -1,0 +1,158 @@
+﻿@model IEnumerable<dynamic>
+
+@{
+    ViewData["Title"] = "Promjene";
+    var list = Model?.ToList() ?? new List<dynamic>();
+}
+
+<div class="glass-card">
+    <div class="glass-card-header">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+                <h2 class="glass-title mb-1">Promjene</h2>
+                <p class="glass-subtitle mb-0">Pregled promjena nad korisnicima i računima</p>
+            </div>
+
+            <a class="btn btn-outline-light" asp-controller="Admin" asp-action="Audit">Osvježi</a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table glass-table align-middle">
+            <thead>
+                <tr>
+                    <th style="width:190px;">Vrijeme</th>
+                    <th style="width:120px;">Entitet</th>
+                    <th style="width:120px;">Akcija</th>
+                    <th style="width:110px;">EntityId</th>
+                    <th style="width:110px;">UserId</th>
+                    <th style="width:120px;" class="text-end">Detalji</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (!list.Any())
+                {
+                    <tr>
+                        <td colspan="6">
+                            <div class="glass-empty">Nema zapisa promjena.</div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    var i = 0;
+                    foreach (var x in list)
+                    {
+                        i++;
+
+                        // Stabilan ključ za hidden textarea
+                        var key = $"a{i}_{((DateTime)x.ChangedAt).Ticks}";
+
+                        var entityText = x.Entity?.ToString() == "User" ? "Korisnik" : "Račun";
+                        var actionText = (x.Action?.ToString() ?? "-").ToUpperInvariant();
+
+                        var badgeClass = actionText == "INSERT"
+                        ? "glass-badge-success"
+                        : actionText == "UPDATE"
+                        ? "glass-badge-warning"
+                        : actionText == "DELETE"
+                        ? "glass-badge-danger"
+                        : "glass-badge";
+                        <tr>
+                            <td>@(((DateTime)x.ChangedAt).ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss"))</td>
+
+                            <td>
+                                <span class="badge rounded-pill glass-badge">@entityText</span>
+                            </td>
+
+                            <td>
+                                <span class="badge rounded-pill @badgeClass">@actionText</span>
+                            </td>
+
+                            <td>@(x.EntityId ?? "-")</td>
+                            <td>@(x.UserId ?? "-")</td>
+
+                            <td class="text-end">
+                                <!-- Hidden sadržaj (sigurno, bez encoding problema) -->
+                                <textarea id="old_@key" class="d-none">@(x.OldData?.ToString() ?? "")</textarea>
+                                <textarea id="new_@key" class="d-none">@(x.NewData?.ToString() ?? "")</textarea>
+
+                                <button type="button"
+                                        class="btn btn-sm btn-outline-light"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#auditModal"
+                                        data-key="@key"
+                                        data-entity="@entityText"
+                                        data-action="@actionText"
+                                        data-time="@(((DateTime)x.ChangedAt).ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss"))">
+                                    Prikaži
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Jedan shared modal (izvan tablice!) -->
+<div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content glass-modal">
+            <div class="modal-header">
+                <div>
+                    <h5 class="modal-title mb-0">Audit detalji</h5>
+                    <small class="text-muted" id="auditModalMeta"></small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Zatvori"></button>
+            </div>
+
+            <div class="modal-body">
+                <div class="row g-3">
+                    <div class="col-12 col-lg-6">
+                        <div class="glass-panel">
+                            <div class="glass-panel-title">Stari podaci</div>
+                            <pre class="glass-pre" id="auditOld"></pre>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-lg-6">
+                        <div class="glass-panel">
+                            <div class="glass-panel-title">Promjenjeni podaci</div>
+                            <pre class="glass-pre" id="auditNew"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Zatvori</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const modalEl = document.getElementById('auditModal');
+            modalEl.addEventListener('show.bs.modal', function (event) {
+                const btn = event.relatedTarget;
+                const key = btn.getAttribute('data-key');
+
+                const entity = btn.getAttribute('data-entity');
+                const action = btn.getAttribute('data-action');
+                const time = btn.getAttribute('data-time');
+
+                const oldVal = document.getElementById('old_' + key)?.value ?? '';
+                const newVal = document.getElementById('new_' + key)?.value ?? '';
+
+                document.getElementById('auditModalMeta').textContent = `${entity} • ${action} • ${time}`;
+                document.getElementById('auditOld').textContent = oldVal;
+                document.getElementById('auditNew').textContent = newVal;
+            });
+        });
+    </script>
+}

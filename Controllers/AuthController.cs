@@ -1,22 +1,24 @@
-﻿using System.Security.Claims;
-using AccountManager.Data;
+﻿using AccountManager.Data;
 using AccountManager.Helpers;
 using AccountManager.Models;
+using AccountManager.Services;
 using AccountManager.ViewModels.Auth;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AccountManager.Controllers;
 
 public class AuthController : Controller
 {
     private readonly ApplicationDbContext _db;
-
-    public AuthController(ApplicationDbContext db)
+    private readonly ISessionService _sessionService;
+    public AuthController(ApplicationDbContext db, ISessionService sessionService)
     {
         _db = db;
+        _sessionService = sessionService;
     }
 
     [HttpGet]
@@ -83,6 +85,20 @@ public class AuthController : Controller
             return View(vm);
         }
 
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
+        var ua = Request.Headers.UserAgent.ToString();
+
+        var sessionId = await _sessionService.CreateSessionAsync(user.Id, ip, ua);
+
+        // claimovi
+        var claims = new List<Claim>
+{
+    new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+    new Claim(ClaimTypes.Name, user.Email),
+    new Claim("roleId", user.RoleId.ToString()),
+    new Claim("sessionId", sessionId.ToString())
+};
+
         await SignInUserAsync(user.Id);
 
         // opcionalno: redirect na admin dashboard ako je admin
@@ -96,8 +112,12 @@ public class AuthController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
-        await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-        return RedirectToAction("Login");
+        var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+
+        await _sessionService.RevokeAllAsync(userId);
+
+        await HttpContext.SignOutAsync();
+        return RedirectToAction("Login", "Auth");
     }
 
     [HttpGet]

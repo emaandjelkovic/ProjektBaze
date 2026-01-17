@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using System.Data;
 
 namespace AccountManager.Controllers;
 
@@ -132,5 +133,83 @@ public class AdminController : Controller
 
         return RedirectToAction(nameof(Users)); // <= prilagodi na tvoju users action
     }
+
+    public async Task<IActionResult> Audit()
+    {
+        // 1) USER audit logovi (ovo imaš kao DbSet)
+        var userLogs = await _db.UserAuditLogs
+            .AsNoTracking()
+            .OrderByDescending(x => x.ChangedAt)
+            .Take(200)
+            .Select(x => new
+            {
+                Entity = AuditTypeEnum.User,
+                EntityId = (int?)x.UserId,
+                UserId = (int?)x.UserId,
+                x.Action,
+                x.ChangedAt,
+                x.OldData,
+                x.NewData
+            })
+            .ToListAsync();
+
+        // 2) ACCOUNT audit logovi (raw SQL)
+        var accountRows = new List<AccountAuditDto>();
+
+        await using (var conn = (NpgsqlConnection)_db.Database.GetDbConnection())
+        {
+            if (conn.State != ConnectionState.Open)
+                await conn.OpenAsync();
+
+            await using var cmd = new NpgsqlCommand(@"
+            SELECT ""Id"", ""AccountId"", ""UserId"", ""Action"", ""ChangedAt"", ""OldData"", ""NewData""
+            FROM account_audit_logs
+            ORDER BY ""ChangedAt"" DESC
+            LIMIT 200;", conn);
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                accountRows.Add(new AccountAuditDto(
+                    Id: reader.GetInt64(0),
+                    AccountId: reader.IsDBNull(1) ? null : reader.GetInt32(1),
+                    UserId: reader.IsDBNull(2) ? null : reader.GetInt32(2),
+                    Action: reader.GetString(3),
+                    ChangedAt: reader.GetDateTime(4),  // timestamptz -> DateTime (UTC)
+                    OldData: reader.IsDBNull(5) ? null : reader.GetString(5),
+                    NewData: reader.IsDBNull(6) ? null : reader.GetString(6)
+                ));
+            }
+        }
+
+        var accountLogs = accountRows.Select(x => new
+        {
+            Entity = AuditTypeEnum.Account,
+            EntityId = x.AccountId,
+            UserId = x.UserId,
+            Action = x.Action,
+            ChangedAt = x.ChangedAt,
+            OldData = x.OldData,
+            NewData = x.NewData
+        }).ToList();
+
+        // 3) Merge + sort
+        var merged = userLogs
+            .Concat(accountLogs)
+            .OrderByDescending(x => x.ChangedAt)
+            .Take(300)
+            .ToList();
+
+        return View(merged);
+    }
+    private sealed record AccountAuditDto(
+    long Id,
+    int? AccountId,
+    int? UserId,
+    string Action,
+    DateTime ChangedAt,
+    string? OldData,
+    string? NewData
+);
 }
 
