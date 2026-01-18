@@ -2,15 +2,15 @@
 {
     public class UserAuditLog
     {
-        public int Id { get; set; }          // bigint identity
+        public int Id { get; set; }         
 
-        public int UserId { get; set; }      // FK (nullable, ON DELETE SET NULL)
+        public int UserId { get; set; }      
 
-        public string Action { get; set; } = string.Empty; // INSERT / UPDATE / DELETE
+        public string Action { get; set; } = string.Empty; 
 
-        public DateTime ChangedAt { get; set; } // timestamptz
+        public DateTime ChangedAt { get; set; } 
 
-        public string? OldData { get; set; }   // JSON snapshot
-        public string? NewData { get; set; }   // JSON snapshot
+        public string? OldData { get; set; }   
+        public string? NewData { get; set; }  
     }
 }

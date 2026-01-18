@@ -11,8 +11,6 @@
         <form asp-action="Edit" method="post" style="margin-top: 28px;">
             @Html.AntiForgeryToken()
 
-            <!-- Id nije nužan jer update radiš po UserId u kontroleru,
-                 ali može ostati kao hidden ako ti je jednostavnije -->
             <input type="hidden" asp-for="Id" />
 
             <div class="form-group">
@@ -56,10 +54,10 @@
     <script>
         flatpickr(".js-date", {
             locale: flatpickr.l10ns.hr, // hrvatski
-            dateFormat: "Y-m-d",        // server-friendly (MVC binder)
+            dateFormat: "Y-m-d",       
             altInput: true,
-            altFormat: "d.m.Y",         // prikaz useru
-            allowInput: false,          // zabrani tipkanje
+            altFormat: "d.m.Y",         
+            allowInput: false,          
             clickOpens: true,
             maxDate: "today"            // rođendan ne može u budućnosti
         });

@@ -2,11 +2,11 @@
 {
     public class AuditDto
     {
-        public string AuditType { get; set; } = ""; // "USER" / "ACCOUNT"
-        public int? EntityId { get; set; }          // userId ili accountId
-        public int? UserId { get; set; }            // povezani userId
-        public string Action { get; set; } = "";    // INSERT/UPDATE/DELETE
-        public DateTime ChangedAt { get; set; }     // UTC timestamptz
+        public string AuditType { get; set; } = ""; 
+        public int? EntityId { get; set; }          
+        public int? UserId { get; set; }            
+        public string Action { get; set; } = "";    
+        public DateTime ChangedAt { get; set; }     
         public string? OldData { get; set; }
         public string? NewData { get; set; }
     }

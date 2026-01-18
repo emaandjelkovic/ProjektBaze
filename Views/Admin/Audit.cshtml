@@ -46,7 +46,6 @@
                     {
                         i++;
 
-                        // Stabilan ključ za hidden textarea
                         var key = $"a{i}_{((DateTime)x.ChangedAt).Ticks}";
 
                         var entityText = x.Entity?.ToString() == "User" ? "Korisnik" : "Račun";
@@ -74,7 +73,6 @@
                             <td>@(x.UserId ?? "-")</td>
 
                             <td class="text-end">
-                                <!-- Hidden sadržaj (sigurno, bez encoding problema) -->
                                 <textarea id="old_@key" class="d-none">@(x.OldData?.ToString() ?? "")</textarea>
                                 <textarea id="new_@key" class="d-none">@(x.NewData?.ToString() ?? "")</textarea>
 
@@ -97,7 +95,6 @@
     </div>
 </div>
 
-<!-- Jedan shared modal (izvan tablice!) -->
 <div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
         <div class="modal-content glass-modal">

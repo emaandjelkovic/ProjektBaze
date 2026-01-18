@@ -10,16 +10,12 @@
 <header class="glass-navbar">
     <div class="glass-navbar-inner">
 
-        <!-- Brand -->
         <a class="glass-brand" asp-controller="Home" asp-action="Index">
             AccountManager
         </a>
 
-        <!-- Navigation -->
         <nav class="glass-nav">
 
-            <!-- Home uvijek vidljiv -->
-            @* <a asp-controller="Home" asp-action="Index">Home</a>
  *@
             <!-- ADMIN -->
             @if (isAdmin)

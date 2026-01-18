@@ -101,7 +101,7 @@ public class AuthController : Controller
 
         await SignInUserAsync(user.Id);
 
-        // opcionalno: redirect na admin dashboard ako je admin
+        
         if (user.Role.Name == "Admin")
             return RedirectToAction("Users", "Admin");
 

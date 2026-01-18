@@ -28,7 +28,6 @@ namespace AccountManager.Services
                 UserId = userId,
                 IpAddress = ip,
                 UserAgent = userAgent,
-                // CreatedAt/LastSeenAt imaju default u bazi, ali nije problem i da ostanu default (Unspecified izbjegavamo)
                 CreatedAt = DateTime.UtcNow,
                 LastSeenAt = DateTime.UtcNow
             };
@@ -41,7 +40,6 @@ namespace AccountManager.Services
 
         public async Task TouchAsync(Guid sessionId, CancellationToken ct = default)
         {
-            // update last seen (UTC)
             var row = await _db.UserSessions.FirstOrDefaultAsync(x => x.Id == sessionId, ct);
             if (row == null) return;
 
@@ -53,7 +51,6 @@ namespace AccountManager.Services
 
         public async Task RevokeAllAsync(int userId, CancellationToken ct = default)
         {
-            // CALL public.sp_revoke_user_sessions(@p_user_id)
             await _db.Database.ExecuteSqlRawAsync(
                 @"CALL public.sp_revoke_user_sessions({0});",
                 new object[] { userId },

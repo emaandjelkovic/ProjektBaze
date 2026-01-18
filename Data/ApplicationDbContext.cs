@@ -18,7 +18,7 @@ namespace AccountManager.Data
         public DbSet<Permission> Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
         public DbSet<UserSession> UserSessions => Set<UserSession>();
-        public DbSet<UserAuditLog> UserAuditLogs => Set<UserAuditLog>(); // ako ga koristiš
+        public DbSet<UserAuditLog> UserAuditLogs => Set<UserAuditLog>(); 
 
 
         public DbSet<VwAdminAccount> VwAdminAccounts => Set<VwAdminAccount>();
@@ -41,7 +41,7 @@ namespace AccountManager.Data
                 entity.HasIndex(r => r.Name)
                       .IsUnique();
 
-                // Seed: 2 role-a (stabilni ID-evi)
+                // Seed: 2 role
                 entity.HasData(
                     new Role { Id = 1, Name = "User" },
                     new Role { Id = 2, Name = "Admin" }
@@ -68,7 +68,7 @@ namespace AccountManager.Data
                 entity.Property(u => u.CreatedAt)
                       .IsRequired();
 
-                // Role (1:N) - Restrict da se role ne može obrisati dok postoje useri
+                // Role (1:N)
                 entity.HasOne(u => u.Role)
                       .WithMany(r => r.Users)
                       .HasForeignKey(u => u.RoleId)
@@ -111,7 +111,7 @@ namespace AccountManager.Data
 
             b.Entity<Permission>(entity =>
             {
-                entity.ToTable("permissions");   // ⬅ lowercase
+                entity.ToTable("permissions");  
 
                 entity.HasKey(p => p.Id);
 

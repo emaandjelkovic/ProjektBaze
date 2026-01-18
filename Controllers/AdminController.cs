@@ -99,7 +99,7 @@ public class AdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleRole(int userId)
     {
-        // dohvat trenutne role iz baze (ne iz DTO)
+        // dohvat trenutne role iz baze
         var currentRoleId = await _db.Users
             .Where(u => u.Id == userId)
             .Select(u => u.RoleId)
@@ -108,10 +108,10 @@ public class AdminController : Controller
         if (currentRoleId == 0)
         {
             TempData["Error"] = "Korisnik ne postoji.";
-            return RedirectToAction(nameof(Users)); // <= prilagodi ako ti je action drugačiji
+            return RedirectToAction(nameof(Users)); 
         }
 
-        // Pretpostavka: 1=User, 2=Admin
+        
         var newRoleId = (currentRoleId == 2) ? 1 : 2;
 
         try
@@ -131,12 +131,12 @@ public class AdminController : Controller
             TempData["Error"] = "Rola ne postoji.";
         }
 
-        return RedirectToAction(nameof(Users)); // <= prilagodi na tvoju users action
+        return RedirectToAction(nameof(Users)); 
     }
 
     public async Task<IActionResult> Audit()
     {
-        // 1) USER audit logovi (ovo imaš kao DbSet)
+        // 1) USER audit logovi
         var userLogs = await _db.UserAuditLogs
             .AsNoTracking()
             .OrderByDescending(x => x.ChangedAt)
@@ -153,7 +153,7 @@ public class AdminController : Controller
             })
             .ToListAsync();
 
-        // 2) ACCOUNT audit logovi (raw SQL)
+        // 2) ACCOUNT audit logovi
         var accountRows = new List<AccountAuditDto>();
 
         await using (var conn = (NpgsqlConnection)_db.Database.GetDbConnection())
@@ -193,7 +193,7 @@ public class AdminController : Controller
             NewData = x.NewData
         }).ToList();
 
-        // 3) Merge + sort
+        
         var merged = userLogs
             .Concat(accountLogs)
             .OrderByDescending(x => x.ChangedAt)
