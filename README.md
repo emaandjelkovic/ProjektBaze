@@ -1,4 +1,4 @@
-# AccountManager 
+# Account Manager 
 
 Projekt je napravljen u sklopu kolegija Teorija baza podataka.
 
